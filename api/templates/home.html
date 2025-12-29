@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PushUp Pro - Daily Tracker</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<style> :root {
+     --background: #fafafa;
+    --foreground: #09090b;
+    --primary: #ff4500;
+    --primary-foreground: #fafafa;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+    --muted: #f4f4f5; --muted-foreground: #71717a;
+    --border: #e4e4e7;
+    --radius: 1rem;
+    --font-sans: 'Inter', sans-serif;
+    --font-display: 'Space Grotesk', sans-serif; } * { box-sizing: border-box; margin: 0; padding: 0; } 
+
+
+body { 
+    font-family: var(--font-sans); 
+    background-color: var(--background);
+    color: var(--foreground);
+    line-height: 1.5; display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh; 
+        }
+
+
+
+header { width: 100%; max-width: 448px; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; } h1 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; } .primary-text { color: var(--primary); } .streak-badge { display: flex; align-items: center; gap: 0.375rem; background: rgba(255, 69, 0, 0.1); color: var(--primary); padding: 0.375rem 0.75rem; border-radius: 9999px; font-weight: 700; font-size: 0.875rem; } main { width: 100%; max-width: 448px; padding: 0 1.5rem 2.5rem; display: flex; flex-direction: column; gap: 2rem; } .counter-section { display: flex; flex-direction: column; align-items: center; padding: 2rem 0; gap: 2rem; } .ring-container { position: relative; width: 18rem; height: 18rem; } .ring-svg { width: 100%; height: 100%; transform: rotate(-90deg); } .ring-bg { fill:none ; stroke :var(--muted) ; stroke-width :6 ; } .ring-progress { fill:none ; stroke :var(--primary) ; stroke-width :6 ; stroke-linecap :round ; transition :stroke-dashoffset .8s ease-in-out ; filter :drop-shadow(0 0 .25em rgba(255,69,0,.3)) ; } .center-content { position:absolute ; inset :0 ; display:flex ; flex-direction :column ; align-items:center ; justify-content:center ; } #daily-count { font-family :var(--font-display) ; font-size :5rem ; font-weight :700 ; letter-spacing :-.05em ; } .label { font-size:.75rem ; text-transform :uppercase ; letter-spacing:.1em ; color :var(--muted-foreground) ; font-weight :500 ; } .actions-grid { display :grid ; grid-template-columns :repeat(2,1fr) ; gap:.75rem ; width :100% ; max-width :24rem }
+button.log-btn {
+    height: 3.5rem;
+    border: none;
+    border-radius: 0.75rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    width: 12rem;
+}
+     
+     .btn-secondary { background-color: var(--secondary); color: var(--secondary-foreground); } .btn-primary { background-color: var(--primary); color: var(--primary-foreground); box-shadow: 0 10px 15px -3px rgba(255, 69, 0, 0.2); } button:hover { transform: translateY(-2px); } .btn-primary:hover { filter: brightness(110%); } button:active { transform: translateY(0); } .milestone-card { background: rgba(244, 244, 245, 0.5); padding: 1rem; border-radius: var(--radius); display: flex; align-items: center; gap: 1rem; width: 100%; max-width: 24rem; } .trophy-icon { padding: 0.625rem; border-radius: 9999px; background: white; color: var(--muted-foreground); transition: all 0.5s; } .trophy-active { background: #fef3c7; color: #d97706; transform: rotate(360deg); } .progress-container { flex: 1; display: flex; flex-direction: column; gap: 0.375rem; } .progress-header { display: flex; justify-content: space-between; font-size: 0.875rem; font-weight: 500; } .progress-bar { height: 0.5rem; background: white; border-radius: 9999px; overflow:hidden ; } .progress-fill { height :100%; background :var(--primary) ; width :var(--width) ; transition :width .8s ease-in-out ; } </style>
+</head>
+<body>
+
+<header>
+    <h1>PushUp<span class="primary-text">.Pro</span></h1>
+</header>
+
+<main>
+<section class="counter-section">
+
+    <div class="ring-container">
+        <svg class="ring-svg" viewBox="0 0 100 100">
+            <circle class="ring-bg" cx="50" cy="50" r="45"></circle>
+            <circle id="progress-circle" class="ring-progress" cx="50" cy="50" r="45"></circle>
+        </svg>
+        <div class="center-content">
+            <div id="daily-count">{{ daily_log.total_pushups }}</div>
+            <span class="label">Daily Reps</span>
+        </div>
+    </div>
+{% if weekly_max %}
+<div style="
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 69, 0, 0.08);
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+">
+    Weekly Max (set by you):
+    <span style="color: #ff4500;">
+        {{ weekly_max.max_pushups }}
+    </span>
+    push-ups
+</div>
+{% else %}
+<div style="
+    margin-top: 1rem;
+    padding: 0.75rem 1rem;
+    background: #f4f4f5;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+    color: #71717a;
+">
+    Weekly max not set yet
+</div>
+{% endif %}
+
+    <div class="actions-grid">
+        <form method="post" action="{% url 'add_pushups' %}">
+            {% csrf_token %}
+            <input type="hidden" name="pushups" value="5">
+            <button class="log-btn btn-secondary">+5</button>
+        </form>
+
+        <form method="post" action="{% url 'add_pushups' %}">
+            {% csrf_token %}
+            <input type="hidden" name="pushups" value="10">
+            <button class="log-btn btn-secondary">+10</button>
+        </form>
+
+        <form method="post" action="{% url 'add_pushups' %}">
+            {% csrf_token %}
+            <input type="hidden" name="pushups" value="15">
+            <button class="log-btn btn-primary">+15</button>
+        </form>
+
+        <form method="post" action="{% url 'add_pushups' %}">
+            {% csrf_token %}
+            <input type="hidden" name="pushups" value="20">
+            <button class="log-btn btn-secondary">+20</button>
+        </form>
+    </div>
+<div style="margin-top: 2.5rem; display: flex; justify-content: center;">
+    <a href="{% url 'weekly_stats' %}" style="text-decoration: none; width: 100%; max-width: 20rem;">
+        <button class="log-btn btn-secondary" style="width: 100%;">
+            Weekly Stats →
+        </button>
+    </a>
+</div>
+
+    <div class="milestone-card">
+        <div id="trophy" class="trophy-icon
+            {% if achievement == 'minor' or achievement == 'major' %} trophy-active {% endif %}">
+            🏆
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-header">
+                <span>Next Milestone</span>
+                <span>
+                    {% if daily_log.total_pushups < 50 %}50
+                    {% elif daily_log.total_pushups < 100 %}100
+                    {% else %}Completed{% endif %}
+                </span>
+            </div>
+
+            <div class="progress-bar">
+                <div id="progress-fill" class="progress-fill"></div>
+            </div>
+        </div>
+    </div>
+
+</section>
+</main>
+
+<script>
+    const count = {{ daily_log.total_pushups }};
+    const goal = 100;
+
+    const circle = document.getElementById('progress-circle');
+    const radius = 45;
+    const circumference = 2 * Math.PI * radius;
+
+    const progress = Math.min(count / goal, 1);
+    circle.style.strokeDasharray = circumference;
+    circle.style.strokeDashoffset = circumference - (progress * circumference);
+
+    const fill = document.getElementById('progress-fill');
+    let milestoneMax = count < 50 ? 50 : 100;
+    fill.style.width = Math.min((count / milestoneMax) * 100, 100) + '%';
+
+    {% if achievement == "major" %}
+        confetti({
+            particleCount: 120,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    {% endif %}
+</script>
+
+</body>
+</html>
